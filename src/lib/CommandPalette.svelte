@@ -18,8 +18,8 @@
     <ul class="command-palette__suggestions">
         {#each commands as command}
             <li class="command-palette__suggestions-item">
-                <button class="command-palette__suggestion">
-                    {command}
+                <button class="command-palette__suggestion" on:click={command.handler}>
+                    {command.name}
                 </button>
             </li>
         {/each}
@@ -27,7 +27,7 @@
 </div>
 
 <script lang="ts">
-export let commands: string[] = [];
+export let commands: Command[] = [];
 export let placeholder = 'Please enter a command';
 </script>
 
