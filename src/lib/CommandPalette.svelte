@@ -13,11 +13,12 @@
             type="text"
             {placeholder}
             bind:this={refs.input}
+            bind:value={query}
         >
     </section>
 
     <ul class="command-palette__suggestions">
-        {#each commands as command}
+        {#each filteredCommands as command}
             <li class="command-palette__suggestions-item">
                 <button class="command-palette__suggestion" on:click={command.handler}>
                     {command.name}
@@ -34,6 +35,8 @@ import { onMount } from "svelte";
 export let commands: Command[] = [];
 export let placeholder = 'Please enter a command';
 
+let query = '';
+
 type Refs = {
     input: HTMLInputElement
 }
@@ -41,6 +44,14 @@ type Refs = {
 const refs: Refs = {
     input: null
 }
+
+$: filteredCommands = commands.filter(command => {
+    if (!query) {
+        return true;
+    }
+
+    return command.name.toLowerCase().replaceAll(' ', '').includes(query.toLowerCase().replaceAll(' ', ''));
+})
 
 onMount(() => {
     refs.input.focus()
