@@ -1,48 +1,62 @@
-<div class="command-palette">
-    <section class="command-palette__field">
-        <label
-            class="command-palette__label u-visually-hidden"
-            for="command-palette-input"
-        >
-            {placeholder}
-        </label>
+<svelte:window on:keydown={handleExternalKeypress} />
 
-        <input
-            id="command-palette-input"
-            class="command-palette__input"
-            type="text"
-            {placeholder}
-            bind:this={refs.input}
-            bind:value={query}
-        >
-    </section>
+{#if state === 'open'}
+    <div class="command-palette">
+        <form class="command-palette__field" bind:this={refs.form}>
+            <label
+                class="command-palette__label u-visually-hidden"
+                for="command-palette-input"
+            >
+                {placeholder}
+            </label>
 
-    <ul class="command-palette__suggestions">
-        {#each filteredCommands as command}
-            <li class="command-palette__suggestions-item">
-                <button class="command-palette__suggestion" on:click={command.handler}>
-                    {command.name}
-                </button>
-            </li>
-        {/each}
-    </ul>
-</div>
+            <input
+                id="command-palette-input"
+                class="command-palette__input"
+                type="text"
+                {placeholder}
+                bind:this={refs.input}
+                bind:value={query}
+            >
+        </form>
+
+        <ul class="command-palette__suggestions">
+            {#each filteredCommands as command}
+                <li class="command-palette__suggestions-item">
+                    <button
+                        class="command-palette__suggestion"
+                        on:click={command.handler}
+                    >
+                        {command.name}
+                    </button>
+                </li>
+            {/each}
+        </ul>
+    </div>
+{/if}
 
 <script lang="ts">
-import { onMount } from "svelte";
-
+import { tick } from "svelte";
+import { ListenerManager } from './ListenerManager';
 
 export let commands: Command[] = [];
+export let openShortcutTest = (event: KeyboardEvent) =>
+    event.metaKey && event.shiftKey && event.key === 'p';
 export let placeholder = 'Please enter a command';
 
+const listeners = new ListenerManager();
+
 let query = '';
+let state: 'closed' | 'open' = 'closed';
 
 type Refs = {
+    form: HTMLFormElement
     input: HTMLInputElement
 }
 
 const refs: Refs = {
-    input: null
+    form: null,
+    input: null,
 }
 
 $: filteredCommands = commands.filter(command => {
@@ -53,9 +67,49 @@ $: filteredCommands = commands.filter(command => {
     return command.name.toLowerCase().replaceAll(' ', '').includes(query.toLowerCase().replaceAll(' ', ''));
 })
 
-onMount(() => {
-    refs.input.focus()
+const awaitCommand = () => new Promise(resolve => {
+    refs.input.focus();
+
+    const listener = (event: Event) => {
+        event.preventDefault();
+
+        listeners.remove(refs.form, 'submit', listener);
+
+        resolve(executeFirstCommand());
+    }
+
+    listeners.add(refs.form, 'submit', listener);
 })
+
+const executeFirstCommand = () => {
+    if (filteredCommands.length === 0) {
+        return
+    }
+
+    const [chosenCommand] = filteredCommands;
+
+    return chosenCommand.handler();
+}
+
+const close = () => {
+    query = '';
+    state = 'closed';
+    listeners.removeAll();
+}
+
+const open = async () => {
+    state = 'open';
+    await tick();
+    await awaitCommand().finally(close);
+}
+
+const handleExternalKeypress = (event: KeyboardEvent) => {
+    if (state === 'closed' && openShortcutTest(event)) {
+        open();
+    } else if (state === 'open' && event.key === 'Escape') {
+        close();
+    }
+}
 </script>
 
 <style>
@@ -72,6 +126,7 @@ onMount(() => {
     gap: 10px;
     margin-inline: auto;
     padding: 10px;
+    position: relative;
     text-align: left;
     width: 600px;
 }
