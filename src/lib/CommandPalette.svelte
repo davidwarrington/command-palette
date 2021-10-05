@@ -12,6 +12,7 @@
             class="command-palette__input"
             type="text"
             {placeholder}
+            bind:this={refs.input}
         >
     </section>
 
@@ -27,8 +28,23 @@
 </div>
 
 <script lang="ts">
+import { onMount } from "svelte";
+
+
 export let commands: Command[] = [];
 export let placeholder = 'Please enter a command';
+
+type Refs = {
+    input: HTMLInputElement
+}
+
+const refs: Refs = {
+    input: null
+}
+
+onMount(() => {
+    refs.input.focus()
+})
 </script>
 
 <style>
