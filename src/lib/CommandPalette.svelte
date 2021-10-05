@@ -4,24 +4,32 @@
             class="command-palette__label u-visually-hidden"
             for="command-palette-input"
         >
-            Please enter a command
+            {placeholder}
         </label>
 
         <input
             id="command-palette-input"
             class="command-palette__input"
             type="text"
+            {placeholder}
         >
     </section>
 
     <ul class="command-palette__suggestions">
-        <li class="command-palette__suggestions-item">
-            <button class="command-palette__suggestion">
-                Command
-            </button>
-        </li>
+        {#each commands as command}
+            <li class="command-palette__suggestions-item">
+                <button class="command-palette__suggestion">
+                    {command}
+                </button>
+            </li>
+        {/each}
     </ul>
 </div>
+
+<script lang="ts">
+export let commands: string[] = [];
+export let placeholder = 'Please enter a command';
+</script>
 
 <style>
 * {

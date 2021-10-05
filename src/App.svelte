@@ -1,5 +1,13 @@
 <script lang="ts">
   import CommandPalette from './lib/CommandPalette.svelte';
+
+  const commands = [
+    'Command 1',
+    'Command 2',
+    'Command 3',
+    'Command 4',
+    'Command 5',
+  ]
 </script>
 
 <main>
@@ -7,7 +15,7 @@
     Press CMD + SHIFT + P
   </h1>
 
-  <CommandPalette />
+  <CommandPalette {commands} />
 </main>
 
 <style>
