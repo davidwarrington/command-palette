@@ -43,9 +43,13 @@ import { ListenerManager } from './ListenerManager';
 export let commands: Command[] = [];
 export let openShortcutTest = (event: KeyboardEvent) =>
     event.metaKey && event.shiftKey && event.key === 'p';
-export let placeholder = 'Please enter a command';
+export let placeholder = '';
 
-export const awaitCommand = () => new Promise(resolve => {
+export const awaitCommand = ({
+    placeholder: inputPlaceholder = '',
+} = {}) => new Promise(resolve => {
+    placeholder = inputPlaceholder;
+
     refs.input.focus();
 
     const events = [
@@ -124,7 +128,7 @@ const close = () => {
 const open = async () => {
     state = 'open';
     await tick();
-    await awaitCommand().finally(close);
+    await awaitCommand({ placeholder: 'Please enter a command' }).finally(close);
 }
 
 const handleExternalKeypress = (event: KeyboardEvent) => {

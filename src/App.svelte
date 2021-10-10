@@ -1,7 +1,7 @@
 <script lang="ts">
   import CommandPalette from './lib/CommandPalette.svelte';
 
-  let palette;
+  let palette: CommandPalette;
 
   const commands: Command[] = [
       'Command 1',
@@ -13,7 +13,11 @@
         name,
         handler: async () => {
           console.log(name)
-          await palette.awaitCommand();
+          if (name === 'Command 1') {
+            await palette.awaitCommand({ placeholder: `What's your next command?` });
+          } else {
+            await palette.awaitCommand();
+          }
         },
       }))
 
