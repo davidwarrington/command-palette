@@ -1,6 +1,6 @@
 type Listener = {
     event: string
-    fn: Function
+    fn: EventListener
 }
 
 export class ListenerManager {
@@ -9,7 +9,7 @@ export class ListenerManager {
     add(
         element: HTMLElement,
         event: string,
-        listener: (event: Event) => void,
+        listener: EventListener,
         options: AddEventListenerOptions = { once: false }
     ) {
         element.addEventListener(event, listener, options);
@@ -28,7 +28,7 @@ export class ListenerManager {
     remove(
         element: HTMLElement,
         event: string,
-        listener: Function
+        listener: EventListener
     ) {
         const existingListeners = this.#listeners.get(element);
 
@@ -42,6 +42,8 @@ export class ListenerManager {
                 existingListener.event === event && existingListener.fn === listener
             )
         );
+
+        element.removeEventListener(event, listener);
     }
 
     removeAll() {
