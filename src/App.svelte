@@ -1,6 +1,8 @@
 <script lang="ts">
   import CommandPalette from './lib/CommandPalette.svelte';
 
+  let palette;
+
   const commands: Command[] = [
       'Command 1',
       'Command 2',
@@ -11,8 +13,16 @@
         name,
         handler: async () => {
           console.log(name)
+          await palette.awaitCommand();
         },
       }))
+
+    commands.push({
+      name: 'Close',
+      handler: async () => {
+        console.log('Closing')
+      }
+    })
 </script>
 
 <main>
@@ -20,7 +30,7 @@
     Press CMD + SHIFT + P
   </h1>
 
-  <CommandPalette {commands} />
+  <CommandPalette {commands} bind:this={palette} />
 </main>
 
 <style>

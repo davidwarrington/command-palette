@@ -70,7 +70,7 @@ $: filteredCommands = commands.filter(command => {
     return command.name.toLowerCase().replaceAll(' ', '').includes(query.toLowerCase().replaceAll(' ', ''));
 })
 
-const awaitCommand = () => new Promise(resolve => {
+export const awaitCommand = () => new Promise(resolve => {
     refs.input.focus();
 
     const events = [
@@ -93,12 +93,11 @@ const awaitCommand = () => new Promise(resolve => {
             );
         });
 
-        if (event.type === 'submit') {
-            resolve(executeFirstCommand());
-        } else {
-            const index = Number((event.target as HTMLButtonElement).dataset.index);
-            resolve(filteredCommands[index].handler());
-        }
+        const commandIndex = event.type === 'submit'
+            ? 0
+            : Number((event.target as HTMLButtonElement).dataset.index);
+
+        resolve(executeCommandAtIndex(commandIndex));
     }
 
     events.forEach(event => {
@@ -108,12 +107,12 @@ const awaitCommand = () => new Promise(resolve => {
     });
 })
 
-const executeFirstCommand = () => {
-    if (filteredCommands.length === 0) {
-        return
-    }
+const executeCommandAtIndex = (index: number) => {
+    const chosenCommand = filteredCommands[index];
 
-    const [chosenCommand] = filteredCommands;
+    if (!chosenCommand) {
+        return;
+    }
 
     return chosenCommand.handler();
 }
