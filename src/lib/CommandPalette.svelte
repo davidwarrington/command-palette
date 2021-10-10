@@ -45,16 +45,27 @@ export let openShortcutTest = (event: KeyboardEvent) =>
     event.metaKey && event.shiftKey && event.key === 'p';
 export let placeholder = '';
 
+type AwaitCommandOptions = {
+    commands?: typeof commands
+    placeholder?: typeof placeholder
+}
+
 export const awaitCommand = ({
+    commands: inputCommands,
     placeholder: inputPlaceholder = '',
-} = {}) => new Promise(resolve => {
+}: AwaitCommandOptions = {}) => new Promise(resolve => {
+    if (inputCommands) {
+        currentCommands = inputCommands;
+    }
     placeholder = inputPlaceholder;
 
     refs.input.focus();
 
     const events = [
         {
-            elements: Object.values(refs.commands),
+            elements: Object.values(refs.commands)
+                // Ensure event listeners are not attached to commands that no longer exist
+                .filter(Boolean),
             type: 'click',
         },
         {
@@ -86,22 +97,24 @@ export const awaitCommand = ({
     });
 });
 
+let currentCommands = commands;
 let query = '';
 let state: 'closed' | 'open' = 'closed';
 
 const listeners = new ListenerManager();
 
-const refs: {
+let refs: {
     commands: Record<string, HTMLButtonElement>
     form: HTMLFormElement
     input: HTMLInputElement
-} = {
+};
+$: refs = {
     commands: {},
     form: null,
     input: null,
 }
 
-$: filteredCommands = commands.filter(command => {
+$: filteredCommands = currentCommands.filter(command => {
     if (!query) {
         return true;
     }
@@ -126,6 +139,7 @@ const close = () => {
 }
 
 const open = async () => {
+    currentCommands = commands;
     state = 'open';
     await tick();
     await awaitCommand({ placeholder: 'Please enter a command' }).finally(close);

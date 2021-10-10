@@ -14,7 +14,10 @@
         handler: async () => {
           console.log(name)
           if (name === 'Command 1') {
-            await palette.awaitCommand({ placeholder: `What's your next command?` });
+            await palette.awaitCommand({
+              commands: commands.filter(command => command.name !== name),
+              placeholder: `What's your next command?`
+            });
           } else {
             await palette.awaitCommand();
           }
