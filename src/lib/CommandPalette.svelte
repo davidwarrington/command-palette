@@ -1,8 +1,16 @@
 <svelte:window on:keydown={handleExternalKeypress} />
 
 {#if state === 'open'}
-    <div class="command-palette">
-        <form class="command-palette__field" bind:this={refs.form}>
+    <div class="command-palette" bind:this={refs.root}>
+        <form
+            class="command-palette__field"
+            bind:this={refs.form}
+            on:submit|preventDefault={({ target }) => dispatchEvent(
+                target,
+                'command-palette:execute',
+                filteredCommands[0]
+            )}
+        >
             <label
                 class="command-palette__label u-visually-hidden"
                 for="command-palette-input"
@@ -21,12 +29,15 @@
         </form>
 
         <ul class="command-palette__suggestions">
-            {#each filteredCommands as command, index}
+            {#each filteredCommands as command}
                 <li class="command-palette__suggestions-item">
                     <button
                         class="command-palette__suggestion"
-                        bind:this={refs.commands[command.name]}
-                        data-index={index}
+                        on:click={({ target }) => dispatchEvent(
+                            target,
+                            'command-palette:execute',
+                            command
+                        )}
                     >
                         {command.name}
                     </button>
@@ -61,40 +72,22 @@ export const awaitCommand = ({
 
     refs.input.focus();
 
-    const events = [
-        {
-            elements: Object.values(refs.commands)
-                // Ensure event listeners are not attached to commands that no longer exist
-                .filter(Boolean),
-            type: 'click',
-        },
-        {
-            elements: [refs.form],
-            type: 'submit',
-        },
-    ];
+    const listenedEvent = {
+        element: refs.root,
+        type: 'command-palette:execute',
+    };
 
-    const listener = (event: Event) => {
+    const listener = (event: CustomEvent<Command>) => {
+        const { detail: command } = event;
+
         event.preventDefault();
 
-        events.forEach(event => {
-            event.elements.forEach(element =>
-                listeners.remove(element, event.type, listener)
-            );
-        });
+        listeners.remove(listenedEvent.element, listenedEvent.type, listener);
 
-        const commandIndex = event.type === 'submit'
-            ? 0
-            : Number((event.target as HTMLButtonElement).dataset.index);
-
-        resolve(executeCommandAtIndex(commandIndex));
+        resolve(command.handler());
     }
 
-    events.forEach(event => {
-        event.elements.forEach(element =>
-            listeners.add(element, event.type, listener)
-        );
-    });
+    listeners.add(listenedEvent.element, listenedEvent.type, listener);
 });
 
 let currentCommands = commands;
@@ -104,14 +97,14 @@ let state: 'closed' | 'open' = 'closed';
 const listeners = new ListenerManager();
 
 let refs: {
-    commands: Record<string, HTMLButtonElement>
     form: HTMLFormElement
     input: HTMLInputElement
+    root: HTMLElement
 };
 $: refs = {
-    commands: {},
     form: null,
     input: null,
+    root: null,
 }
 
 $: filteredCommands = currentCommands.filter(command => {
@@ -122,15 +115,11 @@ $: filteredCommands = currentCommands.filter(command => {
     return command.name.toLowerCase().replaceAll(' ', '').includes(query.toLowerCase().replaceAll(' ', ''));
 })
 
-const executeCommandAtIndex = (index: number) => {
-    const chosenCommand = filteredCommands[index];
-
-    if (!chosenCommand) {
-        return;
-    }
-
-    return chosenCommand.handler();
-}
+const dispatchEvent = <T extends unknown>(
+    target: EventTarget,
+    event: string,
+    detail: T
+) => target.dispatchEvent(new CustomEvent(event, { bubbles: true, detail }));
 
 const close = () => {
     query = '';
