@@ -21,11 +21,12 @@
         </form>
 
         <ul class="command-palette__suggestions">
-            {#each filteredCommands as command}
+            {#each filteredCommands as command, index}
                 <li class="command-palette__suggestions-item">
                     <button
                         class="command-palette__suggestion"
-                        on:click={command.handler}
+                        bind:this={refs.commands[command.name]}
+                        data-index={index}
                     >
                         {command.name}
                     </button>
@@ -50,11 +51,13 @@ let query = '';
 let state: 'closed' | 'open' = 'closed';
 
 type Refs = {
+    commands: Record<string, HTMLButtonElement>
     form: HTMLFormElement
     input: HTMLInputElement
 }
 
 const refs: Refs = {
+    commands: {},
     form: null,
     input: null,
 }
@@ -70,15 +73,39 @@ $: filteredCommands = commands.filter(command => {
 const awaitCommand = () => new Promise(resolve => {
     refs.input.focus();
 
+    const events = [
+        {
+            elements: Object.values(refs.commands),
+            type: 'click',
+        },
+        {
+            elements: [refs.form],
+            type: 'submit',
+        },
+    ];
+
     const listener = (event: Event) => {
         event.preventDefault();
 
-        listeners.remove(refs.form, 'submit', listener);
+        events.forEach(event => {
+            event.elements.forEach(element =>
+                listeners.remove(element, event.type, listener)
+            );
+        });
 
-        resolve(executeFirstCommand());
+        if (event.type === 'submit') {
+            resolve(executeFirstCommand());
+        } else {
+            const index = Number((event.target as HTMLButtonElement).dataset.index);
+            resolve(filteredCommands[index].handler());
+        }
     }
 
-    listeners.add(refs.form, 'submit', listener);
+    events.forEach(event => {
+        event.elements.forEach(element =>
+            listeners.add(element, event.type, listener)
+        );
+    });
 })
 
 const executeFirstCommand = () => {
