@@ -1,13 +1,13 @@
 <svelte:window on:keydown={handleExternalKeypress} />
 
-{#if state === 'open'}
+{#if state === States.OPEN}
     <div class="command-palette" bind:this={refs.root}>
         <form
             class="command-palette__field"
             bind:this={refs.form}
             on:submit|preventDefault={({ target }) => dispatchEvent(
                 target,
-                'command-palette:execute',
+                Events.EXECUTE,
                 filteredCommands[0]
             )}
         >
@@ -35,7 +35,7 @@
                         class="command-palette__suggestion"
                         on:click={({ target }) => dispatchEvent(
                             target,
-                            'command-palette:execute',
+                            Events.EXECUTE,
                             command
                         )}
                     >
@@ -74,7 +74,7 @@ export const awaitCommand = ({
 
     const listenedEvent = {
         element: refs.root,
-        type: 'command-palette:execute',
+        type: Events.EXECUTE,
     };
 
     const listener = (event: CustomEvent<Command>) => {
@@ -90,9 +90,17 @@ export const awaitCommand = ({
     listeners.add(listenedEvent.element, listenedEvent.type, listener);
 });
 
+enum Events {
+    EXECUTE = 'command-palette:execute'
+}
+enum States {
+    CLOSED,
+    OPEN,
+}
+
 let currentCommands = commands;
 let query = '';
-let state: 'closed' | 'open' = 'closed';
+let state: States = States.CLOSED;
 
 const listeners = new ListenerManager();
 
@@ -123,21 +131,21 @@ const dispatchEvent = <T extends unknown>(
 
 const close = () => {
     query = '';
-    state = 'closed';
+    state = States.CLOSED;
     listeners.removeAll();
 }
 
 const open = async () => {
     currentCommands = commands;
-    state = 'open';
+    state = States.OPEN;
     await tick();
     await awaitCommand({ placeholder: 'Please enter a command' }).finally(close);
 }
 
 const handleExternalKeypress = (event: KeyboardEvent) => {
-    if (state === 'closed' && openShortcutTest(event)) {
+    if (state === States.CLOSED && openShortcutTest(event)) {
         open();
-    } else if (state === 'open' && event.key === 'Escape') {
+    } else if (state === States.OPEN && event.key === 'Escape') {
         close();
     }
 }
