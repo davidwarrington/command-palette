@@ -145,16 +145,18 @@ const handleExternalKeypress = (event: KeyboardEvent) => {
 }
 
 .command-palette {
-
     background-color: #ffffff;
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3),
         0 1px 2px 0 rgba(0, 0, 0, 0.18);
     display: grid;
     gap: 10px;
+    left: 50%;
     margin-inline: auto;
     padding: 10px;
-    position: relative;
+    position: fixed;
     text-align: left;
+    top: 150px;
+    transform: translateX(-50%);
     width: 600px;
 }
 
