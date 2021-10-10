@@ -45,31 +45,6 @@ export let openShortcutTest = (event: KeyboardEvent) =>
     event.metaKey && event.shiftKey && event.key === 'p';
 export let placeholder = 'Please enter a command';
 
-const listeners = new ListenerManager();
-
-let query = '';
-let state: 'closed' | 'open' = 'closed';
-
-type Refs = {
-    commands: Record<string, HTMLButtonElement>
-    form: HTMLFormElement
-    input: HTMLInputElement
-}
-
-const refs: Refs = {
-    commands: {},
-    form: null,
-    input: null,
-}
-
-$: filteredCommands = commands.filter(command => {
-    if (!query) {
-        return true;
-    }
-
-    return command.name.toLowerCase().replaceAll(' ', '').includes(query.toLowerCase().replaceAll(' ', ''));
-})
-
 export const awaitCommand = () => new Promise(resolve => {
     refs.input.focus();
 
@@ -105,6 +80,29 @@ export const awaitCommand = () => new Promise(resolve => {
             listeners.add(element, event.type, listener)
         );
     });
+});
+
+let query = '';
+let state: 'closed' | 'open' = 'closed';
+
+const listeners = new ListenerManager();
+
+const refs: {
+    commands: Record<string, HTMLButtonElement>
+    form: HTMLFormElement
+    input: HTMLInputElement
+} = {
+    commands: {},
+    form: null,
+    input: null,
+}
+
+$: filteredCommands = commands.filter(command => {
+    if (!query) {
+        return true;
+    }
+
+    return command.name.toLowerCase().replaceAll(' ', '').includes(query.toLowerCase().replaceAll(' ', ''));
 })
 
 const executeCommandAtIndex = (index: number) => {
