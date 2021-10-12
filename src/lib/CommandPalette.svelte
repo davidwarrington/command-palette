@@ -59,16 +59,19 @@ export let placeholder = '';
 type AwaitCommandOptions = {
     commands?: typeof commands
     placeholder?: typeof placeholder
+    query?: typeof query
 }
 
 export const awaitCommand = ({
     commands: inputCommands,
     placeholder: inputPlaceholder = '',
+    query: inputQuery = '',
 }: AwaitCommandOptions = {}) => new Promise(resolve => {
     if (inputCommands) {
         currentCommands = inputCommands;
     }
     placeholder = inputPlaceholder;
+    query = inputQuery;
 
     refs.input.focus();
 
