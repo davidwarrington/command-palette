@@ -315,10 +315,13 @@ const testKeypressForShortcuts = (event: KeyboardEvent) => {
     width: 100%;
 }
 
-.command-palette__suggestion:focus,
-.command-palette__suggestion:hover {
+.command-palette__suggestion:focus {
     background-color: rgba(0, 0, 0, .01);
     outline: 1px solid var(--colour-red);
+}
+
+.command-palette__suggestion:hover {
+    background-color: rgba(0, 0, 0, .01);
 }
 
 .u-visually-hidden {
