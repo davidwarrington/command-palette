@@ -4,7 +4,6 @@
     <div class="command-palette" bind:this={refs.root} on:keydown|stopPropagation={testKeypressForShortcuts}>
         <form
             class="command-palette__field"
-            bind:this={refs.form}
             on:submit|preventDefault={({ target }) => dispatchEvent(
                 target,
                 Events.EXECUTE,
@@ -49,7 +48,7 @@
 {/if}
 
 <script lang="ts">
-import { tick } from "svelte";
+import { tick } from 'svelte';
 import { ListenerManager } from './ListenerManager';
 
 export let commands: Command[] = [];
@@ -98,8 +97,8 @@ enum Events {
     EXECUTE = 'command-palette:execute'
 }
 enum States {
-    CLOSED,
-    OPEN,
+    CLOSED = 'closed',
+    OPEN = 'open',
 }
 
 let currentCommands = commands;
@@ -109,13 +108,11 @@ let state: States = States.CLOSED;
 const listeners = new ListenerManager();
 
 let refs: {
-    form: HTMLFormElement
     input: HTMLInputElement
     root: HTMLElement
     suggestions: HTMLButtonElement[]
 };
 $: refs = {
-    form: null,
     input: null,
     root: null,
     suggestions: [],
