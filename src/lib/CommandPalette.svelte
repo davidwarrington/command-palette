@@ -1,7 +1,7 @@
 <svelte:window on:keydown={handleExternalKeypress} />
 
 {#if state === States.OPEN}
-    <div class="command-palette" bind:this={refs.root}>
+    <div class="command-palette" bind:this={refs.root} on:keydown|stopPropagation={testKeypressForShortcuts}>
         <form
             class="command-palette__field"
             bind:this={refs.form}
@@ -29,10 +29,11 @@
         </form>
 
         <ul class="command-palette__suggestions">
-            {#each filteredCommands as command}
+            {#each filteredCommands as command, index}
                 <li class="command-palette__suggestions-item">
                     <button
                         class="command-palette__suggestion"
+                        bind:this={refs.suggestions[index]}
                         on:click={({ target }) => dispatchEvent(
                             target,
                             Events.EXECUTE,
@@ -111,11 +112,13 @@ let refs: {
     form: HTMLFormElement
     input: HTMLInputElement
     root: HTMLElement
+    suggestions: HTMLButtonElement[]
 };
 $: refs = {
     form: null,
     input: null,
     root: null,
+    suggestions: [],
 }
 
 $: filteredCommands = currentCommands.filter(command => {
@@ -151,6 +154,81 @@ const handleExternalKeypress = (event: KeyboardEvent) => {
     } else if (state === States.OPEN && event.key === 'Escape') {
         close();
     }
+}
+
+type Shortcut = {
+    test: (event: KeyboardEvent) => boolean,
+    handler: (event: KeyboardEvent) => unknown,
+};
+const shortcuts: Shortcut[] = [
+    {
+        test: event => event.key === 'ArrowDown',
+        handler: event => {
+            event.preventDefault();
+
+            let nextIndex = 0;
+
+            const currentIndex = refs.suggestions.indexOf(document.activeElement as HTMLButtonElement);
+            if (currentIndex !== -1) {
+                nextIndex = currentIndex + 1;
+            }
+
+            if (nextIndex >= filteredCommands.length) {
+                return;
+            }
+
+            refs.suggestions[nextIndex].focus();
+        },
+    },
+    {
+        test: event => event.key === 'ArrowUp',
+        handler: event => {
+            event.preventDefault();
+
+            let nextIndex = -1;
+
+            const currentIndex = refs.suggestions.indexOf(document.activeElement as HTMLButtonElement);
+            if (currentIndex !== -1) {
+                nextIndex = currentIndex - 1;
+            }
+
+            if (nextIndex === -1) {
+                refs.input.focus();
+            } else {
+                refs.suggestions[nextIndex].focus();
+            }
+        },
+    },
+    {
+        test: event => event.key === 'Home',
+        handler: event => {
+            event.preventDefault();
+
+            if (refs.suggestions.includes(document.activeElement as HTMLButtonElement)) {
+                refs.suggestions[0].focus();
+            }
+        },
+    },
+    {
+        test: event => event.key === 'End',
+        handler: event => {
+            event.preventDefault();
+
+            if (refs.suggestions.includes(document.activeElement as HTMLButtonElement)) {
+                refs.suggestions[refs.suggestions.length - 1].focus();
+            }
+        },
+    },
+];
+
+const testKeypressForShortcuts = (event: KeyboardEvent) => {
+    const usedShortcut = shortcuts.find(shortcut => shortcut.test(event));
+
+    if (!usedShortcut) {
+        return;
+    }
+
+    usedShortcut.handler(event);
 }
 </script>
 
