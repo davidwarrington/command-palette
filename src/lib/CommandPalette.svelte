@@ -1,7 +1,13 @@
 <svelte:window on:keydown={handleExternalKeypress} />
 
 {#if state === States.OPEN}
-    <div class="command-palette" bind:this={refs.root} on:keydown|stopPropagation={testKeypressForShortcuts}>
+    <div
+        class="command-palette"
+        bind:this={refs.root}
+        on:keydown|stopPropagation={testKeypressForShortcuts}
+        on:command-palette:click-outside={close}
+        use:clickOutside
+    >
         <form
             class="command-palette__field"
             bind:this={refs.form}
@@ -50,6 +56,7 @@
 
 <script lang="ts">
 import { tick } from 'svelte';
+import { clickOutside } from './directives';
 import { ListenerManager } from './ListenerManager';
 
 export let commands: Command[] = [];
