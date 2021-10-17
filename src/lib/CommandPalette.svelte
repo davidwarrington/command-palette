@@ -4,6 +4,7 @@
     <div class="command-palette" bind:this={refs.root} on:keydown|stopPropagation={testKeypressForShortcuts}>
         <form
             class="command-palette__field"
+            bind:this={refs.form}
             on:submit|preventDefault={({ target }) => dispatchEvent(
                 target,
                 Events.EXECUTE,
@@ -56,24 +57,25 @@ export let openShortcutTest = (event: KeyboardEvent) =>
     event.metaKey && event.shiftKey && event.key === 'p';
 export let placeholder = '';
 
-type AwaitCommandOptions = {
-    commands?: typeof commands
+type AwaitInstructionSettings = {
     placeholder?: typeof placeholder
     query?: typeof query
 }
 
-export const awaitCommand = ({
-    commands: inputCommands,
-    placeholder: inputPlaceholder = '',
-    query: inputQuery = '',
-}: AwaitCommandOptions = {}) => new Promise(resolve => {
-    if (inputCommands) {
-        currentCommands = inputCommands;
-    }
-    placeholder = inputPlaceholder;
-    query = inputQuery;
+type AwaitCommandSettings = {
+    commands?: typeof commands
+}
+
+const prepareForInstruction = (options: AwaitInstructionSettings & AwaitCommandSettings) => {
+    currentCommands = options.commands || [];
+    placeholder = options.placeholder;
+    query = options.query;
 
     refs.input.focus();
+}
+
+export const awaitCommand = (options?: AwaitInstructionSettings & AwaitCommandSettings) => new Promise(resolve => {
+    prepareForInstruction(options);
 
     const listenedEvent = {
         element: refs.root,
@@ -93,8 +95,27 @@ export const awaitCommand = ({
     listeners.add(listenedEvent.element, listenedEvent.type, listener);
 });
 
+export const awaitInput = (options?: AwaitInstructionSettings) => new Promise<string>(resolve => {
+    prepareForInstruction(options);
+
+    const listenedEvent = {
+        element: refs.form,
+        type: 'submit',
+    };
+
+    const listener = (event: SubmitEvent) => {
+        event.preventDefault();
+
+        listeners.remove(listenedEvent.element, listenedEvent.type, listener);
+
+        resolve(query);
+    }
+
+    listeners.add(listenedEvent.element, listenedEvent.type, listener);
+});
+
 enum Events {
-    EXECUTE = 'command-palette:execute'
+    EXECUTE = 'command-palette:execute',
 }
 enum States {
     CLOSED = 'closed',
@@ -108,11 +129,13 @@ let state: States = States.CLOSED;
 const listeners = new ListenerManager();
 
 let refs: {
+    form: HTMLFormElement
     input: HTMLInputElement
     root: HTMLElement
     suggestions: HTMLButtonElement[]
 };
 $: refs = {
+    form: null,
     input: null,
     root: null,
     suggestions: [],
@@ -142,7 +165,8 @@ const open = async () => {
     currentCommands = commands;
     state = States.OPEN;
     await tick();
-    await awaitCommand({ placeholder: 'Please enter a command' }).finally(close);
+    await awaitCommand({ placeholder: 'Please enter a command', commands })
+        .finally(close);
 }
 
 const handleExternalKeypress = (event: KeyboardEvent) => {
