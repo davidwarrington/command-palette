@@ -160,17 +160,22 @@ const handleExternalKeypress = (event: KeyboardEvent) => {
 }
 
 .command-palette {
+    --colour-red: #ff3e00;
+
+    --spacing: 10px;
+    --vertical-offset: 150px;
+
     background-color: #ffffff;
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3),
         0 1px 2px 0 rgba(0, 0, 0, 0.18);
     display: grid;
-    gap: 10px;
+    gap: calc(var(--spacing) * .5);
     left: 50%;
     margin-inline: auto;
-    padding: 10px;
+    padding: var(--spacing);
     position: fixed;
     text-align: left;
-    top: 150px;
+    top: var(--vertical-offset);
     transform: translateX(-50%);
     width: 600px;
 }
@@ -183,26 +188,38 @@ const handleExternalKeypress = (event: KeyboardEvent) => {
     width: 100%;
 }
 
+.command-palette__input:focus {
+    border: 1px solid var(--colour-red);
+    outline: none;
+}
+
 .command-palette__suggestions {
     display: grid;
-    gap: 5px;
     list-style-type: none;
-    margin: 0;
-    padding: 0;
+    margin:  0 calc(var(--spacing) * -1) calc(var(--spacing) * -1);
+    max-height: calc(100vh - (var(--vertical-offset) * 2));
+    padding: calc(var(--spacing) * .5) var(--spacing) calc(var(--spacing) * .5);
+    overflow: auto;
+}
+
+.command-palette__suggestions-item {
+    margin-inline: calc(var(--spacing) * -1);
 }
 
 .command-palette__suggestion {
     appearance: none;
     background-color: transparent;
     border: 0;
-    padding: 5px;
+    cursor: pointer;
+    padding: calc(var(--spacing) * .5) calc(var(--spacing) * 1);
     text-align: left;
     width: 100%;
 }
 
 .command-palette__suggestion:focus,
 .command-palette__suggestion:hover {
-    background-color: rgba(0, 0, 0, .03);
+    background-color: rgba(0, 0, 0, .01);
+    outline: 1px solid var(--colour-red);
 }
 
 .u-visually-hidden {
