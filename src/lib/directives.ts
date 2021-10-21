@@ -5,7 +5,7 @@
 export const clickOutside = (element: HTMLElement) => {
     const handler = (event: MouseEvent) => {
         const elementNoLongerExists = !element;
-        const elementContainsTarget = element.contains(event.target as HTMLElement);
+        const elementContainsTarget = event.composedPath().includes(element);
 
         if (
             event.defaultPrevented ||

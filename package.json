@@ -2,6 +2,18 @@
   "name": "command-palette",
   "version": "0.0.0",
   "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/command-palette.umd.js",
+  "module": "./dist/command-palette.es.js",
+  "exports": {
+    ".": {
+      "import": "./dist/command-palette.es.js",
+      "require": "./dist/command-palette.umd.js"
+    }
+  },
+  "types": "./dist/types.d.ts",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

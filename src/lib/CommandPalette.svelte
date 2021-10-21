@@ -1,3 +1,5 @@
+<svelte:options tag="command-palette" />
+
 <svelte:window on:keydown={handleExternalKeypress} />
 
 {#if state === States.OPEN}
