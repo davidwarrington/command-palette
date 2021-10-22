@@ -2,6 +2,9 @@ import './command-palette.js';
 
 const palette = document.querySelector('command-palette');
 
+const fetchJson = (...args) => fetch(...args)
+    .then(response => response.json());
+
 /**
  * @param {string|string[]} path
  * @param {object} query
@@ -21,20 +24,19 @@ const goTo = (path, query = {}) => {
 }
 
 const getProducts = async (limit = 50) => {
-    const response = await fetch(`/products.json?limit=${limit}`);
-    const { products } = await response.json();
+    const { products } = await fetchJson(`/products.json?limit=${limit}`);
 
     return products;
 }
 
 const addToCart = async items => {
-    const cart = await fetch(`/cart/add.js`, {
+    const cart = await fetchJson(`/cart/add.js`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ items }),
     });
 
-    return cart.json();
+    return cart;
 }
 
 const commands = [
@@ -124,8 +126,7 @@ const commands = [
             const goToAdminThemes = () => goTo([baseAdminURL, 'themes']);
 
             try {
-                const response = await fetch(`${window.location.href}.json`)
-                    .then(fetchResponse => fetchResponse.json());
+                const response = await fetchJson(`${window.location.href}.json`);
 
                 const responseKey = {
                     collections: 'collection',
