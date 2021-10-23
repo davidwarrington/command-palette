@@ -201,6 +201,10 @@ type Shortcut = {
 };
 const shortcuts: Shortcut[] = [
     {
+        test: event => event.key === 'Escape',
+        handler: close,
+    },
+    {
         test: event => event.key === 'ArrowDown',
         handler: event => {
             event.preventDefault();
