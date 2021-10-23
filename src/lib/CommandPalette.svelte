@@ -164,6 +164,15 @@ const dispatchEvent = <T extends unknown>(
     detail: T
 ) => target.dispatchEvent(new CustomEvent(event, { bubbles: true, detail }));
 
+const getActiveShadowElement = () => {
+    let { activeElement } = document;
+    if (activeElement.shadowRoot) {
+        activeElement = activeElement.shadowRoot.activeElement;
+    }
+
+    return activeElement;
+}
+
 const close = () => {
     query = '';
     state = States.CLOSED;
@@ -198,7 +207,7 @@ const shortcuts: Shortcut[] = [
 
             let nextIndex = 0;
 
-            const currentIndex = refs.suggestions.indexOf(document.activeElement as HTMLButtonElement);
+            const currentIndex = refs.suggestions.indexOf(getActiveShadowElement() as HTMLButtonElement);
             if (currentIndex !== -1) {
                 nextIndex = currentIndex + 1;
             }
@@ -217,7 +226,7 @@ const shortcuts: Shortcut[] = [
 
             let nextIndex = -1;
 
-            const currentIndex = refs.suggestions.indexOf(document.activeElement as HTMLButtonElement);
+            const currentIndex = refs.suggestions.indexOf(getActiveShadowElement() as HTMLButtonElement);
             if (currentIndex !== -1) {
                 nextIndex = currentIndex - 1;
             }
@@ -234,7 +243,7 @@ const shortcuts: Shortcut[] = [
         handler: event => {
             event.preventDefault();
 
-            if (refs.suggestions.includes(document.activeElement as HTMLButtonElement)) {
+            if (refs.suggestions.includes(getActiveShadowElement() as HTMLButtonElement)) {
                 refs.suggestions[0].focus();
             }
         },
@@ -244,7 +253,7 @@ const shortcuts: Shortcut[] = [
         handler: event => {
             event.preventDefault();
 
-            if (refs.suggestions.includes(document.activeElement as HTMLButtonElement)) {
+            if (refs.suggestions.includes(getActiveShadowElement() as HTMLButtonElement)) {
                 refs.suggestions[refs.suggestions.length - 1].focus();
             }
         },
