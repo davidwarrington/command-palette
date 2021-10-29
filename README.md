@@ -1,5 +1,9 @@
 # Command Palette
 
+Wouldn't it be handy if we had a command palette at hand to perform common actions on every site we develop? This command palette was built to address that. It's intended for use in development environments on any project. Bring your own commands.
+
+The Command Palette is a HTML Custom Element so should work on any front end.
+
 ## Setup
 
 ```html
@@ -9,7 +13,7 @@
 ```js
 import 'command-palette';
 
-const palette = document.querySelector('palette');
+const palette = document.querySelector('command-palette');
 palette.commands = [
   {
     name: 'Command',
@@ -22,26 +26,33 @@ palette.commands = [
 
 ## Properties
 
-### Commands
+### commands
+Type: `Command[]`
 
-Type:
-```ts
-Array<{
-    name: string;
-    handler: () => Promise<unknown> | unknown;
-}>
-```
+Default: `[]`
+
+| Property | Type                                | Description                                    |
+|----------|-------------------------------------|------------------------------------------------|
+| name     | `string`                            | Shown in the list of commands                  |
+| handler  | `() => Promise<unknown> \| unknown` | The function executed when a command is chosen |
 
 The commands array defines the options that will be presented every time you open the palette.
+
+### openShortcutTest
+Type: `(event: KeyboardEvent) => boolean`
+
+Default: `event => event.metaKey && event.shiftKey && event.key === 'p'`
+
+If this function returns `true`, the command palette will open.
 
 ## Methods
 
 ### awaitCommand
-Waits for the user to trigger a command. This can be used to chain commands together.
+Waits for the user to trigger a command. This can be used to chain a series of commands together.
 
 ```js
 const palette = document.querySelector('command-palette');
-const commands = [
+palette.commands = [
   {
     name: 'Add product to cart',
     async handler() {
@@ -78,7 +89,7 @@ Waits for the user to provide some info. Rather than executing a command, this r
 
 ```js
 const palette = document.querySelector('command-palette');
-const commands = [
+palette.commands = [
   {
     name: 'Search',
     async handler() {
@@ -123,3 +134,7 @@ interface CommandPaletteElement extends Element {
 const palette = document.querySelector<CommandPaletteElement>('command-palette');
 palette.commands = [];
 ```
+
+## Examples
+
+The Command Palette can be used in any kind of project. You can find a number of sample commands for Shopify builds [here](/examples/shopify/index.js).
