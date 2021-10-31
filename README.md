@@ -41,7 +41,7 @@ The commands array defines the options that will be presented every time you ope
 ### openShortcutTest
 Type: `(event: KeyboardEvent) => boolean`
 
-Default: `event => event.metaKey && event.shiftKey && event.key === 'p'`
+Default: `event => event.metaKey && event.key === 'k'`
 
 If this function returns `true`, the command palette will open.
 
