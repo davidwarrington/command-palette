@@ -1,6 +1,6 @@
 {
-  "name": "command-palette",
-  "version": "0.0.0",
+  "name": "svelte-command-palette",
+  "version": "0.0.1",
   "type": "module",
   "files": [
     "dist"
@@ -13,7 +13,6 @@
       "require": "./dist/command-palette.umd.js"
     }
   },
-  "types": "./dist/types.d.ts",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
