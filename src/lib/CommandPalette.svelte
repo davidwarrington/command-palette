@@ -63,7 +63,7 @@ import { ListenerManager } from './ListenerManager';
 
 export let commands: Command[] = [];
 export let openShortcutTest = (event: KeyboardEvent) =>
-    event.metaKey && event.shiftKey && event.key === 'p';
+    event.metaKey && event.key === 'k';
 export let placeholder = '';
 
 type AwaitInstructionSettings = {
