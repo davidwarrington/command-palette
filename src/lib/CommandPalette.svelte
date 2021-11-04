@@ -13,11 +13,17 @@
         <form
             class="command-palette__field"
             bind:this={refs.form}
-            on:submit|preventDefault={({ target }) => dispatchEvent(
-                target,
-                Events.EXECUTE,
-                filteredCommands[0]
-            )}
+            on:submit|preventDefault={({ target }) => {
+                if (listingType !== 'commands') {
+                    return;
+                }
+
+                dispatchEvent(
+                    target,
+                    Events.EXECUTE,
+                    filteredCommands[0]
+                )
+            }}
         >
             <label
                 class="command-palette__label u-visually-hidden"
@@ -30,6 +36,7 @@
                 id="command-palette-input"
                 class="command-palette__input"
                 type="text"
+                autocomplete="off"
                 {placeholder}
                 bind:this={refs.input}
                 bind:value={query}
@@ -37,21 +44,35 @@
         </form>
 
         <ul class="command-palette__suggestions">
-            {#each filteredCommands as command, index}
-                <li class="command-palette__suggestions-item">
-                    <button
-                        class="command-palette__suggestion"
-                        bind:this={refs.suggestions[index]}
-                        on:click={({ target }) => dispatchEvent(
-                            target,
-                            Events.EXECUTE,
-                            command
-                        )}
-                    >
-                        {command.name}
-                    </button>
-                </li>
-            {/each}
+            {#if listingType === 'commands'}
+                {#each filteredCommands as command, index}
+                    <li class="command-palette__suggestions-item">
+                        <button
+                            class="command-palette__suggestion"
+                            bind:this={refs.suggestions[index]}
+                            on:click={({ target }) => dispatchEvent(
+                                target,
+                                Events.EXECUTE,
+                                command
+                            )}
+                        >
+                            {command.name}
+                        </button>
+                    </li>
+                {/each}
+            {:else}
+                {#each filteredLinks as link, index}
+                    <li class="command-palette__suggestions-item">
+                        <a
+                            class="command-palette__suggestion"
+                            href={link.url.toString()}
+                            bind:this={refs.suggestions[index]}
+                        >
+                            {link.name}
+                        </a>
+                    </li>
+                {/each}
+            {/if}
         </ul>
     </div>
 {/if}
@@ -61,6 +82,7 @@ import { tick } from 'svelte';
 import { clickOutside } from './directives';
 import { ListenerManager } from './ListenerManager';
 
+export let links: Link[] = [];
 export let commands: Command[] = [];
 export let openShortcutTest = (event: KeyboardEvent) =>
     event.metaKey && event.key === 'k';
@@ -141,7 +163,7 @@ let refs: {
     form: HTMLFormElement
     input: HTMLInputElement
     root: HTMLElement
-    suggestions: HTMLButtonElement[]
+    suggestions: (HTMLAnchorElement | HTMLButtonElement)[]
 };
 $: refs = {
     form: null,
@@ -150,12 +172,22 @@ $: refs = {
     suggestions: [],
 }
 
+type ListingType = 'commands' | 'links';
+$: listingType = query && query[0] === '>' ? 'commands' : 'links' as ListingType;
+
 $: filteredCommands = currentCommands.filter(command => {
     if (!query) {
         return true;
     }
 
-    return command.name.toLowerCase().replaceAll(' ', '').includes(query.toLowerCase().replaceAll(' ', ''));
+    return command.name.toLowerCase().replaceAll(' ', '').includes(query.toLowerCase().replace(/^>/, '').replaceAll(' ', ''));
+})
+$: filteredLinks = links.filter(link => {
+    if (!query) {
+        return true;
+    }
+
+    return link.name.toLowerCase().replaceAll(' ', '').includes(query.toLowerCase().replaceAll(' ', ''));
 })
 
 const dispatchEvent = <T extends unknown>(
@@ -216,7 +248,7 @@ const shortcuts: Shortcut[] = [
                 nextIndex = currentIndex + 1;
             }
 
-            if (nextIndex >= filteredCommands.length) {
+            if (nextIndex >= refs.suggestions.length) {
                 return;
             }
 
@@ -331,9 +363,12 @@ const testKeypressForShortcuts = (event: KeyboardEvent) => {
     appearance: none;
     background-color: transparent;
     border: 0;
+    color: currentColor;
     cursor: pointer;
+    display: block;
     padding: calc(var(--spacing) * .5) calc(var(--spacing) * 1);
     text-align: left;
+    text-decoration: none;
     width: 100%;
 }
 
